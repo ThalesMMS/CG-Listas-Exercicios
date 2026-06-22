@@ -13,8 +13,8 @@ function assertNotIncludes(haystack, needle, label) {
   assert.ok(!haystack.includes(needle), `${label} should not include ${needle}`);
 }
 
-const legacyLayout = read("CG - Lista de exercícios 1/js/core/layout.js");
-const legacyCss = read("CG - Lista de exercícios 1/css/styles.css");
+const legacyLayout = read("CG - Lista de exercícios 1/js/core/layout.js");
+const legacyCss = read("CG - Lista de exercícios 1/css/styles.css");
 
 assertIncludes(legacyLayout, "q-questionbar", "Lista 1 layout");
 assertIncludes(legacyLayout, "aria-current", "Lista 1 layout");
