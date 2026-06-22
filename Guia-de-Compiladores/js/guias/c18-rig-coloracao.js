@@ -127,14 +127,17 @@
       },
       C.tableStep({
         title: "Quando trava: derramamento (spill)",
-        body: "Se todos os nós restantes têm grau ≥ k, escolhe-se um para <b>derramar</b> (guardar na " +
-          "memória). Pega-se o de <b>menor custo</b> = nº de usos − nº de conflitos + (5 se está em loop):",
-        headers: ["nó", "usos", "conflitos", "loop", "custo"],
+        body: "Se a simplificação deixa um <b>núcleo travado</b> — todos com grau ≥ k, por exemplo um " +
+          "<b>K4</b> com k = 3 (cada nó com grau 3) — nenhum nó é simplificável e é preciso " +
+          "<b>derramar</b>. A regra de custo <b>deste exercício</b> (não uma heurística universal de " +
+          "alocadores reais) é nº de usos − nº de conflitos + (5 se em loop). Aqui C e D têm o mesmo grau " +
+          "e usos — D vence por estar fora do loop:",
+        headers: ["nó", "usos", "conflitos (grau)", "loop", "custo"],
         rows: [
-          ["A", "4", "1", "+5", "8"],
-          ["B", "3", "1", "+5", "7"],
-          ["C", "3", "2", "+5", "6"],
-          ["D", "1", "0", "0", "1  ← derrama (menor)"],
+          ["A", "6", "3", "+5", "8"],
+          ["B", "5", "3", "+5", "7"],
+          ["C", "4", "3", "+5", "6"],
+          ["D", "4", "3", "+0", "1  ← derrama (menor)"],
         ],
       }),
       C.domStep(

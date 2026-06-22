@@ -480,39 +480,54 @@
     title: "Escolhendo spill de menor custo",
     tags: ["spill", "rig"],
     hubDesc: "Aplicar a formula ocorrencias - conflitos + bonus de loop.",
-    statement: "Encontre o derramamento de menor custo para o fragmento e RIG dados.",
+    statement:
+      "Com k = 3 registradores, o RIG dado nao pode ser simplificado (todos os nos tem grau >= 3). " +
+      "Aplique a regra de custo do exercicio para escolher o no a derramar.",
     build: function () {
       return [
         {
-          title: "RIG pequeno",
+          title: "RIG travado: um K4 com k = 3",
           body:
-            "<p>O no <code>D</code> nao interfere com nenhum outro e aparece fora do laco. Pela formula dada, ele tem o menor custo.</p>",
+            "<p>Os quatro nos formam um <b>K4</b>: cada um interfere com os outros tres, entao todos tem " +
+            "<b>grau 3 = k</b>. Como nenhum no tem grau &lt; k, <b>simplify nao remove ninguem</b> e a " +
+            "pilha fica vazia &mdash; e preciso <b>derramar</b> (um K4 nao e 3-colorivel). " +
+            "<code>D</code> esta fora do laco.</p>",
           visual: { type: "svg", draw: function (svg) {
-            svg.view(520, 260);
+            svg.view(540, 280);
             var nodes = {
-              A: { x: 155, y: 70 },
-              B: { x: 350, y: 70 },
-              C: { x: 255, y: 160 },
-              D: { x: 105, y: 160 },
+              A: { x: 165, y: 75 },
+              B: { x: 385, y: 75 },
+              C: { x: 385, y: 205 },
+              D: { x: 165, y: 205 },
             };
-            C.rig(svg, { w: 520, h: 260, nodes: nodes, edges: [["A", "C"], ["B", "C"]], colors: { D: "var(--green)" } });
+            C.rig(svg, {
+              w: 540, h: 280, nodes: nodes,
+              edges: [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"], ["A", "C"], ["B", "D"]],
+              colors: { D: "var(--green)" },
+            });
           } },
         },
         C.tableStep({
-          title: "Custos",
+          title: "Custos (regra deste exercicio)",
           body:
-            "<p>Mesmo quando ha pequenas variacoes na contagem de uso/definicao, <code>D</code> continua sendo o menor: nao esta no laco e nao conflita.</p>",
-          headers: ["no", "ocorrencias", "conflitos", "bonus loop", "custo"],
+            "<p>A formula <code>usos - conflitos + (5 se em laco)</code> e a <b>regra deste exercicio</b>, " +
+            "nao uma heuristica universal de alocadores reais. Como todos tem o mesmo grau (3), a decisao " +
+            "vem da <b>frequencia</b>: <code>C</code> e <code>D</code> tem usos e grau iguais, mas " +
+            "<code>D</code> esta fora do laco e fica mais barato.</p>",
+          headers: ["no", "usos", "conflitos (grau)", "bonus laco", "custo"],
           rows: [
-            ["A", "4", "1", "+5", "8"],
-            ["B", "3", "1", "+5", "7"],
-            ["C", "3", "2", "+5", "6"],
-            ["D", "1", "0", "+0", "1"],
+            ["A", "6", "3", "+5", "8"],
+            ["B", "5", "3", "+5", "7"],
+            ["C", "4", "3", "+5", "6"],
+            ["D", "4", "3", "+0", "1"],
           ],
         }),
         C.choiceStep({
           title: "Resposta",
-          body: "<p>O melhor candidato para spill e <code>D</code>.</p>",
+          body:
+            "<p>Entre os nos <b>genuinamente travados</b> (grau &ge; k), o de menor custo e <code>D</code>. " +
+            "Um no de grau &lt; k nunca chegaria a esta decisao &mdash; seria <b>simplificado</b> e " +
+            "recolorido depois, nao derramado.</p>",
           choices: [
             { id: "a", html: "<code>A</code>" },
             { id: "b", html: "<code>B</code>" },

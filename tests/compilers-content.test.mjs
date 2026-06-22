@@ -330,4 +330,36 @@ const norm = (s) =>
   assert.ok(/entram como <code>⊤<\/code>|chegam <b>desconhecidos de fora<\/b>/.test(c16), "#8: c16 states parameters enter as ⊤");
 }
 
+/* ───────────────────────── issue #9: Lista C Q11 / Guia c18 ────────────────────────
+ * A degree-0 node must never be the spill pick (it gets simplified). The corrected
+ * RIG is a K4 with k=3 (every node degree 3 ≥ k, chromatic number 4 > 3): spill is
+ * truly forced, and the exercise's cost formula picks D (cheapest, outside the loop).
+ */
+{
+  const k = 3;
+  const edges = [["A", "B"], ["B", "C"], ["C", "D"], ["D", "A"], ["A", "C"], ["B", "D"]]; // K4
+  const deg = {};
+  for (const [u, v] of edges) { deg[u] = (deg[u] || 0) + 1; deg[v] = (deg[v] || 0) + 1; }
+  for (const n of ["A", "B", "C", "D"]) assert.ok(deg[n] >= k, `#9: ${n} has degree ${deg[n]} ≥ k=${k} (stuck — no simplify)`);
+
+  const cost = (usos, conflitos, loop) => usos - conflitos + (loop ? 5 : 0);
+  const costs = { A: cost(6, 3, true), B: cost(5, 3, true), C: cost(4, 3, true), D: cost(4, 3, false) };
+  assert.deepEqual(costs, { A: 8, B: 7, C: 6, D: 1 }, "#9: costs per the exercise's formula");
+  const spill = Object.keys(costs).reduce((a, b) => (costs[b] < costs[a] ? b : a));
+  assert.equal(spill, "D", "#9: lowest-cost spill among the stuck nodes is D");
+  // D beats C purely by loop membership (identical uses and degree) — cost vs degree vs frequency.
+  assert.equal(cost(4, 3, true), 6, "#9: C in loop costs 6");
+  assert.equal(cost(4, 3, false), 1, "#9: D outside loop costs 1 (same uses/degree as C)");
+
+  const q11 = read("Compiladores-Lista-C/js/questions/compiladores/lista-c.js");
+  const c18 = read("Guia-de-Compiladores/js/guias/c18-rig-coloracao.js");
+  for (const [u, v] of edges) assert.ok(q11.includes(`["${u}", "${v}"]`), `#9: Q11 RIG has K4 edge ${u}-${v}`);
+  assert.ok(/regra deste exercicio/i.test(q11), "#9: Q11 labels the cost formula as the exercise's rule");
+  assert.ok(/grau &lt; k/.test(q11) && /simplificad/.test(q11), "#9: Q11 notes a degree<k node would be simplified, not spilled");
+  assert.ok(!/\["D", "1", "0",/.test(q11), "#9: Q11 spill node no longer has degree 0");
+  assert.ok(/deste exercício/.test(c18), "#9: c18 labels the cost formula as the exercise's rule");
+  assert.ok(!/\["D", "1", "0", "0"/.test(c18), "#9: c18 spill node no longer has degree 0");
+  assert.ok(/K4/.test(c18) && /grau ≥ k/.test(c18), "#9: c18 frames spill as a stuck core (all degree ≥ k)");
+}
+
 console.log("Compilers content checks passed.");
