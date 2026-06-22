@@ -235,18 +235,21 @@
     svg.view(spec.w || 760, spec.h || 260);
     var free = {};
     (spec.free || []).forEach(function (i) { free[i] = true; });
+    var marked = {};
+    (spec.marked || []).forEach(function (i) { marked[i] = true; });
     svg.text(x0 - 45, y + ch / 2, "root", { anchor: "end", size: 13, mono: true, color: "var(--ink-dim)" });
     if (spec.root != null) svg.arrow(x0 - 38, y + ch / 2, x0 + spec.root * cw, y + ch / 2, { color: "var(--ink)", head: 8 });
     for (var i = 0; i < labels.length; i++) {
+      var mk = marked[i] && !free[i];
       svg.rect(x0 + i * cw, y, cw, ch, {
-        fill: free[i] ? "var(--red-soft)" : "var(--bg-soft)",
-        stroke: free[i] ? "var(--red)" : "var(--ink)",
-        strokeWidth: 2,
+        fill: free[i] ? "var(--red-soft)" : mk ? "var(--green-soft)" : "var(--bg-soft)",
+        stroke: free[i] ? "var(--red)" : mk ? "var(--green)" : "var(--ink)",
+        strokeWidth: mk ? 3 : 2,
       });
       svg.text(x0 + i * cw + cw / 2, y + ch / 2, labels[i], {
         mono: true,
         weight: 700,
-        color: free[i] ? "var(--red)" : "var(--ink)",
+        color: free[i] ? "var(--red)" : mk ? "var(--green)" : "var(--ink)",
       });
     }
     (spec.pointers || []).forEach(function (p) {

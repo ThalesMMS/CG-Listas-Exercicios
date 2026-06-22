@@ -1,5 +1,7 @@
 /*
  * c15-otimizacao-local.js — Guia: Otimização local (bloco básico).
+ * Agora com a TRANSFORMAÇÃO ANIMADA do bloco: propaga constantes, faz folding e
+ * remove código morto até colapsar em g := 5. Reusa EX.Compilers.codeStep.
  */
 (function () {
   "use strict";
@@ -22,23 +24,45 @@
           "g := e - f",
         lang: "text",
       }),
-      C.domStep(
-        "Propagação de constantes e cópia",
-        "Se uma variável tem valor <b>conhecido e único</b> naquele ponto, substitua-a por esse valor. " +
-          "Aqui <code>a = 1</code> e <code>b = 3</code> propagam para baixo:",
-        C.codeHtml("d := a * 3  →  d := 1 * 3  →  d := 3\ne := b * 3  →  e := 3 * 3  →  e := 9\nf := a + b  →  f := 1 + 3  →  f := 4\ng := e - f  →  g := 9 - 4  →  g := 5")
-      ),
-      C.domStep(
-        "Subexpressões comuns e código morto",
-        "Outras duas otimizações clássicas:",
-        "<div class='ex-callout tip'><div class='ex-callout-title'>Duas regras</div>" +
-          "<ul>" +
-          "<li><b>Subexpressões comuns</b>: se um cálculo idêntico já foi feito e os operandos não " +
-          "mudaram, reaproveite o resultado em vez de recalcular;</li>" +
-          "<li><b>Código morto</b>: remova atribuições cujo resultado <b>nunca é usado</b>. Como " +
-          "<code>c</code> não é referenciado fora, <code>c := a + x</code> pode sair.</li>" +
-          "</ul></div>"
-      ),
+      C.codeStep({
+        title: "1) Propagação de constantes/cópia",
+        body: "<code>a = 1</code> e <code>b = 3</code> têm valor <b>conhecido e único</b>: " +
+          "substituímos cada uso de <code>a</code>/<code>b</code> pelos valores (linhas destacadas).",
+        code:
+          "a := 1\n" +
+          "b := 3\n" +
+          "c := 1 + x\n" +
+          "d := 1 * 3\n" +
+          "e := 3 * 3\n" +
+          "f := 1 + 3\n" +
+          "g := e - f",
+        active: [3, 4, 5, 6],
+        lang: "text",
+      }),
+      C.codeStep({
+        title: "2) Folding (calcula o constante)",
+        body: "Operações entre constantes são <b>avaliadas em tempo de compilação</b>: " +
+          "<code>d=3</code>, <code>e=9</code>, <code>f=4</code> e então <code>g = 9 − 4 = 5</code>.",
+        code:
+          "a := 1\n" +
+          "b := 3\n" +
+          "c := 1 + x\n" +
+          "d := 3\n" +
+          "e := 9\n" +
+          "f := 4\n" +
+          "g := 5",
+        active: [4, 5, 6, 7],
+        lang: "text",
+      }),
+      C.codeStep({
+        title: "3) Elimina código morto",
+        body: "Só <code>g</code> e <code>x</code> escapam do bloco. Tudo o que <b>ninguém usa fora</b> " +
+          "(a, b, c, d, e, f) é <b>código morto</b> e some — inclusive <code>c := 1 + x</code>, que " +
+          "nunca é lido. Sobra:",
+        code: "g := 5",
+        active: [1],
+        lang: "text",
+      }),
       C.tableStep({
         title: "Quais otimizações são válidas (Lista C, Q5)",
         body: "Cuidado com as inválidas — elas mudam o resultado:",
@@ -54,8 +78,9 @@
         "Resumo",
         "Encadeando otimizações válidas, o bloco inteiro colapsa em <code>g := 5</code>.",
         "<div class='ex-callout tip'><div class='ex-callout-title'>Em uma frase</div>" +
-          "Propague o que é constante, reaproveite cálculos repetidos e <b>apague o que ninguém usa</b> " +
-          "— sempre preservando o efeito observável (aqui, o valor de g).</div>"
+          "<b>Propague</b> o que é constante, faça <b>folding</b>, reaproveite cálculos repetidos " +
+          "(subexpressões comuns) e <b>apague o que ninguém usa</b> — sempre preservando o efeito " +
+          "observável (aqui, o valor de g).</div>"
       ),
     ];
   }
@@ -67,10 +92,10 @@
     section: "Otimização",
     title: "Otimização local (bloco básico)",
     type: "computacional",
-    hubDesc: "Propagação de constantes/cópia, subexpressões comuns e eliminação de código morto.",
+    hubDesc: "Propagação, folding e eliminação de código morto animados até o bloco colapsar em g:=5.",
     statement:
-      "Entenda as otimizações locais de um bloco básico: propagação de constantes e cópia, eliminação " +
-      "de subexpressões comuns e de código morto.",
+      "Entenda as otimizações locais de um bloco básico: propagação de constantes e cópia, folding, " +
+      "eliminação de subexpressões comuns e de código morto, passo a passo.",
     parts: [{ label: "Guia", build: build }],
   });
 })();

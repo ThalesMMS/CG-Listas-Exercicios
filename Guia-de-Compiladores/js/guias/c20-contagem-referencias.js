@@ -1,10 +1,22 @@
 /*
  * c20-contagem-referencias.js — Guia: Coleta de lixo por contagem de referências.
+ * Agora com a ANIMAÇÃO da liberação em CASCATA (contadores nas células) e o
+ * ponto cego dos ciclos. Reusa EX.Compilers.heap.
  */
 (function () {
   "use strict";
   var EX = window.EX;
   var C = EX.Compilers;
+
+  // Heap com contadores na própria célula (ex.: "B:1"). A=raiz; A→B→C, A→D.
+  function rcHeap(cells, pointers, free, note) {
+    return {
+      type: "svg",
+      draw: function (svg) {
+        C.heap(svg, { cells: cells, root: 0, free: free || [], pointers: pointers, note: note, cw: 62 });
+      },
+    };
+  }
 
   function build() {
     return [
@@ -12,19 +24,15 @@
         title: "Contar quem aponta para cada objeto",
         body:
           "<p>Em vez de rastrear das raízes, cada objeto guarda um <b>contador de referências</b>: " +
-          "quantos ponteiros apontam para ele. Quando o contador chega a <b>0</b>, ninguém mais o " +
-          "alcança → libera <b>na hora</b>.</p>" +
+          "quantos ponteiros apontam para ele (mostrado como <code>nome:contador</code>). Quando o " +
+          "contador chega a <b>0</b>, ninguém mais o alcança → libera <b>na hora</b>.</p>" +
           "<p>É <b>incremental</b> (sem pausas longas), mas tem um ponto cego importante.</p>",
-        visual: {
-          type: "svg",
-          draw: function (svg) {
-            C.heap(svg, {
-              cells: ["A", "B", "C", "E"], root: 0,
-              pointers: [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 2, to: 1, side: "bottom" }, { from: 0, to: 3 }],
-              note: "B tem 2 referências (de A e de C); C tem 1 (de B).",
-            });
-          },
-        },
+        visual: rcHeap(
+          ["A", "B:1", "C:1", "D:1"],
+          [{ from: 0, to: 1 }, { from: 1, to: 2 }, { from: 0, to: 3 }],
+          [],
+          "A (raiz) aponta B e D; B aponta C. Cada um com 1 referência."
+        ),
       },
       C.domStep(
         "As operações",
@@ -37,16 +45,32 @@
           "objetos que X apontava (efeito <b>cascata</b>).</li>" +
           "</ul></div>"
       ),
-      C.tableStep({
-        title: "Exemplo (Lista C, Q14)",
-        body: "Executando C.ptrParaB = D e depois A.ptrParaB = NULL:",
-        headers: ["operação", "efeito nos contadores", "libera?"],
-        rows: [
-          ["C.ptrParaB = D", "B: 2→1 ; D: 1→2", "—"],
-          ["A.ptrParaB = NULL", "B: 1→0", "libera B"],
-          ["cascata ao liberar B", "C: 1→0 (B apontava C)", "libera C"],
-        ],
-      }),
+      {
+        title: "Cascata — passo 1: A solta B",
+        body:
+          "<p>Executando <code>A.ptrParaB = NULL</code>: o contador de <b>B</b> cai de 1 para <b>0</b>. " +
+          "Ninguém mais aponta B → ele <b>será liberado</b>. Repare que B ainda aponta C (é o que " +
+          "dispara a cascata).</p>",
+        visual: rcHeap(
+          ["A", "B:0", "C:1", "D:1"],
+          [{ from: 1, to: 2 }, { from: 0, to: 3 }],
+          [1],
+          "B: 1 → 0 → liberado. B apontava C…"
+        ),
+      },
+      {
+        title: "Cascata — passo 2: libera C",
+        body:
+          "<p>Ao liberar <b>B</b>, decrementamos quem <b>B</b> apontava: <b>C</b> cai de 1 para " +
+          "<b>0</b> → <b>C também é liberado</b>. A liberação se propaga em <b>cascata</b>. Sobram " +
+          "<b>A</b> e <b>D</b>.</p>",
+        visual: rcHeap(
+          ["A", "B:0", "C:0", "D:1"],
+          [{ from: 0, to: 3 }],
+          [1, 2],
+          "cascata: C: 1 → 0 → liberado. A e D continuam vivos."
+        ),
+      },
       {
         title: "O ponto cego: ciclos",
         body:
@@ -58,7 +82,7 @@
           type: "svg",
           draw: function (svg) {
             C.heap(svg, {
-              cells: ["D", "F"], x: 240, root: null,
+              cells: ["D:1", "F:1"], x: 240, root: null, cw: 62,
               pointers: [{ from: 0, to: 1, side: "top" }, { from: 1, to: 0, side: "bottom" }],
               note: "D e F se apontam (count 1 cada), mas são inalcançáveis → vazamento.",
             });
@@ -80,8 +104,8 @@
         "Resumo",
         "Contagem de referências troca rastreamento por bookkeeping incremental.",
         "<div class='ex-callout tip'><div class='ex-callout-title'>Em uma frase</div>" +
-          "Conte ponteiros; libere ao chegar a 0 (com cascata). Simples e imediato — mas " +
-          "<b>ciclos vazam</b>, exigindo um coletor de rastreamento de apoio.</div>"
+          "Conte ponteiros; libere ao chegar a 0 (com <b>cascata</b> nos objetos apontados). Simples e " +
+          "imediato — mas <b>ciclos vazam</b>, exigindo um coletor de rastreamento de apoio.</div>"
       ),
     ];
   }
@@ -93,10 +117,10 @@
     section: "Gerenciamento de Memória",
     title: "Contagem de referências",
     type: "conceitual",
-    hubDesc: "Contador por objeto; libera ao zerar (cascata); ciclos vazam.",
+    hubDesc: "Contador por objeto; liberação em cascata animada ao zerar; ciclos vazam.",
     statement:
       "Entenda a coleta de lixo por contagem de referências: as operações de incremento/decremento, a " +
-      "liberação em cascata e a limitação dos ciclos.",
+      "liberação em cascata (animada) e a limitação dos ciclos.",
     parts: [{ label: "Guia", build: build }],
   });
 })();

@@ -6,17 +6,22 @@
   var EX = window.EX;
   var C = EX.Compilers;
 
-  // Hierarquia Animal (Lista B, Q6).
-  function animalTree(svg) {
-    C.classTree(svg, {
-      w: 620, h: 320,
-      nodes: {
-        Animal: { x: 300, y: 50 }, Pet: { x: 210, y: 165 }, Lion: { x: 430, y: 165 },
-        Cat: { x: 120, y: 280 }, Dog: { x: 300, y: 280 },
+  // Hierarquia Animal (Lista B, Q6). `active` realça a classe sendo inspecionada.
+  function animalTreeVisual(active) {
+    return {
+      type: "svg",
+      draw: function (svg) {
+        C.classTree(svg, {
+          w: 620, h: 320,
+          nodes: {
+            Animal: { x: 300, y: 50 }, Pet: { x: 210, y: 165 }, Lion: { x: 430, y: 165 },
+            Cat: { x: 120, y: 280 }, Dog: { x: 300, y: 280 },
+          },
+          edges: [["Animal", "Pet"], ["Animal", "Lion"], ["Pet", "Cat"], ["Pet", "Dog"]],
+          active: active || [],
+        });
       },
-      edges: [["Animal", "Pet"], ["Animal", "Lion"], ["Pet", "Cat"], ["Pet", "Dog"]],
-      active: [],
-    });
+    };
   }
 
   function build() {
@@ -31,7 +36,7 @@
           "<li><b>tipo dinâmico</b> — a <em>classe real</em> do objeto em tempo de execução.</li>" +
           "</ul>" +
           "<p>Regra de ouro: o tipo dinâmico é sempre um <b>subtipo</b> (≤) do estático.</p>",
-        visual: { type: "svg", draw: animalTree },
+        visual: animalTreeVisual([]),
       },
       C.tableStep({
         title: "Estático nunca muda (Lista B, Q6)",
@@ -76,6 +81,27 @@
           "(Animal tem fala) e, em runtime, chama <code>Dog.fala</code>. Por isso " +
           "<code>c.baz().foo()</code> chama o <code>foo</code> da classe real retornada.</div>"
       ),
+      {
+        title: "A busca do método — começa na classe real",
+        body:
+          "<p>Suponha <code>x</code> guardando um <b>Dog</b> (tipo dinâmico) e a chamada " +
+          "<code>x.respira()</code>. A busca começa na <b>classe real</b> e sobe pela herança até " +
+          "achar o método. <b>Dog</b> não define <code>respira</code> → sobe.</p>",
+        visual: animalTreeVisual(["Dog"]),
+      },
+      {
+        title: "Não achou? Sobe um nível",
+        body: "<p><b>Pet</b> também não define <code>respira</code>. A busca continua subindo pela " +
+          "cadeia de herança.</p>",
+        visual: animalTreeVisual(["Pet"]),
+      },
+      {
+        title: "Achou em Animal → executa",
+        body:
+          "<p><b>Animal</b> define <code>respira()</code> → é o que <b>executa</b>. Se <b>Dog</b> tivesse " +
+          "sobrescrito o método, a busca pararia logo nele — é assim que a sobrescrita funciona.</p>",
+        visual: animalTreeVisual(["Animal"]),
+      },
     ];
   }
 

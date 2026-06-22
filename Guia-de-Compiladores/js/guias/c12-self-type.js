@@ -50,6 +50,31 @@
           "<code>c : C</code> tem tipo <b>C</b> (não a classe-base). Assim <code>c.baz().foo()</code> " +
           "chama o <code>foo</code> de C — cada objeto usa a sua versão do método.</div>"
       ),
+      {
+        title: "SELF_TYPE flui pela cadeia",
+        body:
+          "<p>Acompanhe a cadeia <code>c.baz().foo()</code> com <code>c : C</code>: o " +
+          "<code>SELF_TYPE</code> devolvido por <code>baz()</code> é <b>resolvido para C</b> (a classe " +
+          "de <code>c</code>), e por isso <code>foo()</code> é procurado em <b>C</b> — e não na " +
+          "classe-base onde <code>baz</code> talvez esteja declarado.</p>",
+        visual: {
+          type: "svg",
+          draw: function (svg) {
+            C.flow(svg, {
+              w: 600, h: 430,
+              nodes: [
+                { id: "a", x: 230, y: 24, w: 220, h: 50, lines: ["c : C"] },
+                { id: "b", x: 220, y: 120, w: 250, h: 64, lines: ["c.baz() : SELF_TYPE", "(avaliado em c)"] },
+                { id: "c", x: 220, y: 230, w: 250, h: 64, lines: ["SELF_TYPE = C", "(a classe de c)"], active: true },
+                { id: "d", x: 215, y: 340, w: 260, h: 64, lines: ["c.baz().foo()", "usa o foo de C"] },
+              ],
+              edges: [
+                { from: "a", to: "b" }, { from: "b", to: "c" }, { from: "c", to: "d" },
+              ],
+            });
+          },
+        },
+      },
       C.domStep(
         "Resumo",
         "SELF_TYPE dá precisão de tipo sem abrir mão do polimorfismo.",

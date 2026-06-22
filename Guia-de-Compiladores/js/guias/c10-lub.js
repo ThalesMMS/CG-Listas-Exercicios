@@ -30,11 +30,26 @@
           "<p>Caso especial: se <code>A ≤ B</code> (A é subtipo de B), então <code>LUB(A,B) = B</code>.</p></div>"
       ),
       {
-        title: "Exemplo: lub(Square, Circle) = Shape",
+        title: "lub(Square, Circle) — sobe de Square",
         body:
-          "<p>Square sobe <code>Square → Rect → Quad → Shape</code>; Circle sobe " +
-          "<code>Circle → Shape</code>. O primeiro encontro é <b>Shape</b>.</p>",
-        visual: G.coolTree(["Square", "Rect", "Quad", "Shape", "Circle"]),
+          "<p>Primeiro, liste os <b>ancestrais de Square</b> subindo até a raiz: " +
+          "<code>Square → Rect → Quad → Shape → Object</code> (destacados).</p>",
+        visual: G.coolTree(["Square", "Rect", "Quad", "Shape", "Object"]),
+      },
+      {
+        title: "lub(Square, Circle) — sobe de Circle",
+        body:
+          "<p>Agora os <b>ancestrais de Circle</b>: <code>Circle → Shape → Object</code>. " +
+          "Procuramos o ancestral comum <b>mais baixo</b> entre as duas listas.</p>",
+        visual: G.coolTree(["Circle", "Shape", "Object"]),
+      },
+      {
+        title: "O encontro: Shape",
+        body:
+          "<p>Os dois caminhos compartilham <b>Shape</b> e <b>Object</b>; o <b>mais baixo</b> é " +
+          "<b>Shape</b>. Logo <code>lub(Square, Circle) = Shape</code> — o tipo mais específico que " +
+          "serve para os dois ramos.</p>",
+        visual: G.coolTree(["Square", "Circle", "Shape"]),
       },
       C.tableStep({
         title: "Mais casos",

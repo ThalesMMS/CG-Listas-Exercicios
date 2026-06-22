@@ -22,6 +22,20 @@
     "  x : Int <- 14;\n" +
     "}";
 
+  // Pilha de escopos (topo = declaração mais interna em vigor); resolve no topo.
+  function scopeVisual(cells) {
+    return {
+      type: "svg",
+      draw: function (svg) {
+        svg.view(560, 280);
+        svg.text(120, 34, "pilha de escopos (topo = mais interno)", { anchor: "start", size: 13, weight: 700, color: "var(--ink-dim)" });
+        EX.Diagram.boxes(svg, {
+          cells: cells, x: 120, y: 54, cellW: 250, cellH: 40, orientation: "v",
+        }, { highlight: [0], pointers: [{ index: 0, label: "resolve aqui", color: "var(--accent)" }] });
+      },
+    };
+  }
+
   function build() {
     return [
       C.domStep(
@@ -48,6 +62,31 @@
           "Uma declaração interna <b>esconde</b> (shadow) as externas <em>enquanto</em> está no escopo. " +
           "Quando o <code>let</code> fecha, a externa volta a valer.</div>"
       ),
+      {
+        title: "Pilha de escopos — uso na linha 5",
+        body: "<p>No uso de <code>x</code> na <b>linha 5</b>, a pilha de escopos (de fora para dentro) " +
+          "tem o atributo, o parâmetro e o <code>let x ← 4</code>. Resolve-se no <b>topo</b> (mais " +
+          "interno): o <code>let</code> da linha 4.</p>",
+        visual: scopeVisual(["let x ← 4   (l.4)", "parâmetro x   (l.2)", "atributo x   (l.13)"]),
+      },
+      {
+        title: "Linha 7 — entra o let interno",
+        body: "<p>Na <b>linha 7</b>, o <code>let x ← 7</code> (linha 6) está em vigor: é empilhado por " +
+          "cima e vira o topo. O uso resolve <b>nele</b>.</p>",
+        visual: scopeVisual(["let x ← 7   (l.6)", "let x ← 4   (l.4)", "parâmetro x   (l.2)", "atributo x   (l.13)"]),
+      },
+      {
+        title: "Linha 8 — o let interno fechou",
+        body: "<p>Passado o <code>let</code> da linha 6, ele é <b>desempilhado</b>. Na <b>linha 8</b> o " +
+          "topo volta a ser <code>let x ← 4</code> — o sombreamento acabou.</p>",
+        visual: scopeVisual(["let x ← 4   (l.4)", "parâmetro x   (l.2)", "atributo x   (l.13)"]),
+      },
+      {
+        title: "Linha 10 — fora dos dois let",
+        body: "<p>Na <b>linha 10</b>, ambos os <code>let</code> já fecharam. O topo é o <b>parâmetro</b> " +
+          "<code>x</code> (linha 2), que <b>esconde</b> o atributo da linha 13.</p>",
+        visual: scopeVisual(["parâmetro x   (l.2)", "atributo x   (l.13)"]),
+      },
       C.tableStep({
         title: "As ligações",
         body: "Cada uso e a declaração que o captura:",

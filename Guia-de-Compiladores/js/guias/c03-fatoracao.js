@@ -17,6 +17,29 @@
         C.codeHtml("S → S + S | S + P\n         ^^^^ ^^^^\n      mesmo prefixo \"S +\" → o parser não sabe qual escolher")
       ),
       {
+        title: "O ponto de indecisão",
+        body:
+          "<p>Depois de ler o prefixo comum <code>α</code>, as duas produções ainda são possíveis. " +
+          "Com <b>um</b> símbolo de lookahead o parser <b>não consegue escolher</b> — é um conflito.</p>",
+        visual: {
+          type: "svg",
+          draw: function (svg) {
+            C.flow(svg, {
+              w: 740, h: 280,
+              nodes: [
+                { id: "q", x: 280, y: 26, w: 220, h: 56, lines: ["leu o prefixo α", "e agora?"] },
+                { id: "b1", x: 70, y: 180, w: 240, h: 50, lines: ["A → α β₁"], fill: "var(--red-soft)", stroke: "var(--red)" },
+                { id: "b2", x: 440, y: 180, w: 240, h: 50, lines: ["A → α β₂"], fill: "var(--red-soft)", stroke: "var(--red)" },
+              ],
+              edges: [
+                { from: "q", to: "b1", label: "?", color: "var(--red)" },
+                { from: "q", to: "b2", label: "?", color: "var(--red)" },
+              ],
+            });
+          },
+        },
+      },
+      {
         title: "A transformação",
         body:
           "<p>Fatorar à esquerda <b>adia a decisão</b>: extrai o prefixo comum <code>α</code> e empurra " +

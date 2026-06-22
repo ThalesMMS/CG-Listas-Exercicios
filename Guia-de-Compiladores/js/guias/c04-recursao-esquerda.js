@@ -58,6 +58,30 @@
           "   ( A ⇒ B! ⇒ C! ⇒ A?!  — recursão indireta à esquerda )",
         ]
       ),
+      {
+        title: "A recursão indireta é um ciclo",
+        body:
+          "<p>Seguindo o <b>primeiro símbolo</b> de cada produção, há um caminho que sai de " +
+          "<code>A</code> e <b>volta</b> a <code>A</code> pela esquerda: <code>A → B → C → A</code>. " +
+          "Esse <b>ciclo</b> no grafo de dependências é a recursão indireta.</p>",
+        visual: {
+          type: "svg",
+          draw: function (svg) {
+            EX.Diagram.graph(svg, {
+              nodes: [
+                { id: "A", x: 300, y: 80 },
+                { id: "B", x: 470, y: 300 },
+                { id: "C", x: 130, y: 300 },
+              ],
+              edges: [
+                { from: "A", to: "B", directed: true, label: "B !" },
+                { from: "B", to: "C", directed: true, label: "C" },
+                { from: "C", to: "A", directed: true, label: "A ?" },
+              ],
+            }, { view: [600, 380] });
+          },
+        },
+      },
       G.gstep(
         "Indireta — passo a passo (Lista A)",
         "Substituindo <code>B</code> e depois <code>C</code> dentro de <code>A</code>, a recursão fica " +
