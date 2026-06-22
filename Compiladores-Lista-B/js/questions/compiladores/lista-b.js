@@ -127,6 +127,19 @@
     build: function () {
       return [
         C.tableStep({
+          title: "As regras em julgamento",
+          body:
+            "<p>Cada regra propoe um tipo para a conclusao a partir das premissas. Uma regra e boa quando o " +
+            "tipo prometido bate com a semantica de avaliacao.</p>",
+          headers: ["regra", "premissas", "conclusao proposta"],
+          rows: [
+            ["Sequencia", { html: "<code>e1:T1, ..., en:Tn</code>" }, { html: "<code>{ e1; ...; en; } : Tn</code>" }],
+            [{ html: "Comparacao <code>&lt;</code>" }, { html: "<code>e1:Int, e2:Int</code>" }, { html: "<code>e1 &lt; e2 : Int</code>" }],
+            ["Divisao", { html: "<code>e1:Int, e2:Int</code>" }, { html: "<code>e1 / e2 : Bool</code>" }],
+            ["isvoid", { html: "<code>e : T</code> (qualquer T)" }, { html: "<code>isvoid(e) : Bool</code>" }],
+          ],
+        }),
+        C.tableStep({
           title: "Como julgar uma regra",
           body:
             "<p>Uma regra boa nao deve prometer um tipo que a avaliacao real nao entrega.</p>",
@@ -277,6 +290,29 @@
       "No fim da execucao, escolha os pares tipo estatico/tipo dinamico corretos para <code>w</code>, <code>x</code>, <code>y</code> e <code>z</code>.",
     build: function () {
       return [
+        {
+          title: "A hierarquia de classes",
+          body:
+            "<p>As classes formam esta hierarquia: <code>Pet</code> e <code>Lion</code> herdam de " +
+            "<code>Animal</code>; <code>Cat</code> e <code>Dog</code> herdam de <code>Pet</code>. O tipo " +
+            "dinamico de uma variavel e a classe do objeto atribuido; o estatico, o tipo declarado.</p>",
+          visual: {
+            type: "svg",
+            draw: function (svg) {
+              C.classTree(svg, {
+                w: 560, h: 320,
+                nodes: {
+                  Animal: { x: 280, y: 50 },
+                  Pet: { x: 200, y: 155 },
+                  Lion: { x: 400, y: 155 },
+                  Cat: { x: 120, y: 260 },
+                  Dog: { x: 300, y: 260 },
+                },
+                edges: [["Animal", "Pet"], ["Animal", "Lion"], ["Pet", "Cat"], ["Pet", "Dog"]],
+              });
+            },
+          },
+        },
         C.codeStep({
           title: "Atribuicoes relevantes",
           body:
@@ -372,41 +408,84 @@
     build: function () {
       return [
         C.codeStep({
-          title: "Programa original: baz sempre cria A",
+          title: "Primeiro programa: classes A, B, C e Main",
           body:
-            "<p><code>baz()</code> atribui <code>new A</code> a <code>x</code> e retorna esse objeto. Por isso as chamadas terminam em <code>A.foo()</code>.</p>",
+            "<p><code>B</code> e <code>C</code> herdam de <code>A</code> e <b>redefinem</b> <code>foo()</code>. " +
+            "O <code>main</code> imprime tres chamadas (linhas 16-18).</p>",
           code:
             "class A {\n" +
             "  x : A;\n" +
             "  baz() : A {{ x <- new A; x; }};\n" +
             "  bar() : A { new A };\n" +
             "  foo() : String { \" COMPILADORES !\" };\n" +
+            "};\n" +
+            "class B inherits A {\n" +
+            "  foo() : String { \" \" };\n" +
+            "};\n" +
+            "class C inherits A {\n" +
+            "  foo() : String { \" A melhor disciplina : \" };\n" +
+            "};\n" +
+            "class Main {\n" +
+            "  main() : Object {\n" +
+            "    let io : IO <- new IO, b : B <- new B, c : C <- new C in {{\n" +
+            "      io.out_string( c.baz().foo() );\n" +
+            "      io.out_string( b.baz().foo() );\n" +
+            "      io.out_string( b.bar().baz().foo() );\n" +
+            "    }}\n" +
+            "  };\n" +
             "};",
-          active: [2, 3, 4, 5],
+          active: [16, 17, 18],
         }),
         C.domStep(
-          "Saida original",
-          "<p>As tres expressoes chamam <code>foo()</code> sobre um objeto dinamico de classe <code>A</code>.</p>",
+          "Saida original (a)",
+          "<p>Cada <code>baz()</code> faz <code>x &lt;- new A</code> e retorna esse <b>A</b>; entao " +
+            "<code>.foo()</code> despacha sobre um <b>A</b> e as redefinicoes de <code>foo</code> em " +
+            "<code>B</code>/<code>C</code> <b>nunca</b> sao alcancadas.</p>",
           "<div class='ex-callout tip'><div class='ex-callout-title'>Saida</div>" +
           "<pre class='formula'> COMPILADORES ! COMPILADORES ! COMPILADORES !</pre></div>"
         ),
         C.codeStep({
-          title: "Alteracao para obter a frase desejada",
+          title: "Alteracao (b): baz retorna SELF_TYPE",
           body:
-            "<p>Troque <code>x</code> e <code>baz()</code> para <code>SELF_TYPE</code>, mas deixe <code>bar()</code> retornando <code>new A</code>. Assim <code>c.baz()</code> preserva <code>C</code>, <code>b.baz()</code> preserva <code>B</code> e <code>b.bar()</code> ainda produz <code>A</code>.</p>",
+            "<p>Troque as linhas 2-4 de <code>A</code> para que <code>baz()</code> devolva " +
+            "<code>SELF_TYPE</code> (mantendo <code>bar()</code> em <code>A</code>). Agora " +
+            "<code>c.baz()</code> e um <b>C</b> &rarr; <code>C.foo()</code> = ' A melhor disciplina : '; " +
+            "<code>b.baz()</code> e um <b>B</b> &rarr; ' '; <code>b.bar().baz()</code> e um <b>A</b> " +
+            "&rarr; ' COMPILADORES !'. Saida: <b>A melhor disciplina:  COMPILADORES!</b></p>",
           code:
             "x : SELF_TYPE;\n" +
             "baz() : SELF_TYPE {{ x <- new SELF_TYPE; x; }};\n" +
             "bar() : A { new A };",
           active: [1, 2],
         }),
+        C.codeStep({
+          title: "Segundo programa: imprimir 2021x?",
+          body:
+            "<p>Pode-se trocar <code>(* x &lt;- SEU CODIGO; *)</code> da linha 6 por uma atribuicao a " +
+            "<code>x</code> que faca o programa imprimir <code>2021x</code>?</p>",
+          code:
+            "class Main {\n" +
+            "  main() : Object {\n" +
+            "    let io : IO <- new IO, x : Int <- 20 in {{\n" +
+            "      io.out_int( x );\n" +
+            "      let x : Int <- 1 in {{\n" +
+            "        (* x <- SEU CODIGO; *)\n" +
+            "        io.out_int( x );\n" +
+            "      }};\n" +
+            "      if x == 21 then io.out_string( \"x\" ) else io.out_int( x ) fi;\n" +
+            "    }}\n" +
+            "  };\n" +
+            "};",
+          active: [5, 6, 9],
+        }),
         C.domStep(
-          "Segundo programa: nao da para imprimir 2021x",
-          "<p>O <code>let x : Int <- 1</code> da linha 5 cria outro <code>x</code>, mais interno. A atribuicao da linha 6 alcanca esse <code>x</code>, nao o externo inicializado com 20.</p>",
+          "Por que e impossivel",
+          "<p>O <code>let x : Int <- 1</code> da linha 5 cria outro <code>x</code>, mais interno. A " +
+            "atribuicao da linha 6 alcanca esse <code>x</code>, nao o externo inicializado com 20.</p>",
           html([
-            "<div class='ex-callout danger'><div class='ex-callout-title'>Por que e impossivel?</div>",
-            "<p>Se a linha 6 fizer <code>x <- 21</code>, a linha 7 imprime 21, mas ao sair do <code>let</code> interno o <code>x</code> externo continua 20. O <code>if x == 21</code> sera falso.</p>",
-            "<p>Com apenas uma atribuicao para o nome <code>x</code> dentro do escopo sombreado, nao ha como modificar o <code>x</code> externo.</p></div>",
+            "<div class='ex-callout danger'><div class='ex-callout-title'>Sombra de let</div>",
+            "<p>Se a linha 6 fizer <code>x <- 21</code>, a linha 7 imprime 21, mas ao sair do <code>let</code> interno o <code>x</code> externo continua 20. O <code>if x == 21</code> (linha 9) sera falso e imprime 20.</p>",
+            "<p>Com apenas uma atribuicao para o nome <code>x</code> dentro do escopo sombreado, nao ha como modificar o <code>x</code> externo &mdash; entao <code>2021x</code> e impossivel.</p></div>",
           ])
         ),
       ];

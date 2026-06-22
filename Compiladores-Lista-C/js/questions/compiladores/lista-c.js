@@ -129,6 +129,19 @@
       "Para <code>potenciaDeDois</code>, conte temporarios para <code>x % 2 == 0</code>, chamada recursiva, <code>x == 1</code> e total.",
     build: function () {
       return [
+        C.codeStep({
+          title: "A funcao e o que conta como temporario",
+          body:
+            "<p>Um <b>temporario</b> e um valor intermediario que precisa ser guardado (num registrador) " +
+            "enquanto outra parte da expressao e avaliada. Contamos o <b>pico</b> de temporarios vivos ao " +
+            "mesmo tempo &mdash; nao a soma de todos, pois os ramos do <code>if</code> nao executam juntos.</p>",
+          code:
+            "def potenciaDeDois(x) =\n" +
+            "  if x % 2 == 0\n" +
+            "  then potenciaDeDois(x / 2)\n" +
+            "  else x == 1",
+          active: [2, 3, 4],
+        }),
         C.tableStep({
           title: "Contagem por subexpressao",
           body:
@@ -191,14 +204,16 @@
         C.choiceStep({
           title: "Resposta",
           body:
-            "<p>Como <code>x,y</code> aparecem antes de <code>z</code>, e <code>z</code> antes de <code>u,v</code>, a cadeia e <code>B < C < A</code>.</p>",
+            "<p>Os campos herdados vem primeiro: <code>x,y</code> antes de <code>z</code>, e <code>z</code> " +
+            "antes de <code>u,v</code>. Logo <b>C herda de B</b> (acrescenta <code>z</code>) e <b>A herda " +
+            "de C</b> (acrescenta <code>u,v</code>). Em notacao de subtipo: <code>A &le; C &le; B</code>.</p>",
           choices: [
-            { id: "a", html: "<code>A &lt; B &lt; C</code>" },
-            { id: "b", html: "<code>C &lt; B &lt; A</code>" },
-            { id: "c", html: "<code>A &lt; C &lt; B</code>" },
-            { id: "d", html: "<code>B &lt; C &lt; A</code>" },
+            { id: "a", html: "A herda de B; B herda de C" },
+            { id: "b", html: "C herda de B; B herda de A" },
+            { id: "c", html: "A herda de C; C herda de B" },
+            { id: "d", html: "B herda de C; C herda de A" },
           ],
-          correct: ["d"],
+          correct: ["c"],
         }),
       ];
     },
@@ -375,10 +390,31 @@
       "Depois da analise de vivacidade, quais variaveis entre W, X, Y e Z estao vivas no ponto indicado?",
     build: function () {
       return [
+        {
+          title: "O grafo de fluxo (CFG)",
+          body:
+            "<p>O ponto indicado (<code>?</code>) e antes do teste <code>X &gt; 0</code>. Assuma todas as " +
+            "variaveis mortas na saida. Uma variavel esta <b>viva</b> se algum caminho a <b>le</b> antes " +
+            "de redefini-la.</p>",
+          visual: { type: "svg", draw: function (svg) {
+            C.flow(svg, { w: 720, h: 380, nodes: [
+              { id: "p", x: 270, y: 20, w: 190, h: 50, lines: ["?  if X > 0"], active: true },
+              { id: "t", x: 95, y: 140, w: 210, h: 70, lines: ["Z := W + 4", "Y := Y + 1"] },
+              { id: "e", x: 430, y: 150, w: 160, h: 48, lines: ["Z := 7"] },
+              { id: "m", x: 250, y: 290, w: 210, h: 50, lines: ["U := Z"] },
+            ], edges: [
+              { from: "p", to: "t", label: "X > 0" },
+              { from: "p", to: "e", label: "senao" },
+              { from: "t", to: "m" },
+              { from: "e", to: "m" },
+            ] });
+          } },
+        },
         C.tableStep({
           title: "Usos futuros a partir do ponto",
           body:
-            "<p>Uma variavel esta viva se seu valor atual pode ser lido antes de ser redefinido em algum caminho.</p>",
+            "<p>Lendo o CFG acima, uma variavel esta viva se seu valor atual pode ser lido antes de ser " +
+            "redefinido em algum caminho.</p>",
           headers: ["variavel", "viva?", "motivo"],
           rows: [
             ["W", { html: "<span class='ok'>sim</span>" }, { html: "pode ser usada em <code>Z := W + 4</code>" }],
@@ -460,13 +496,14 @@
         C.tableStep({
           title: "Sequencias",
           body:
-            "<p>A sequencia <code>d,e,c,b,a,f</code> sempre escolhe um no de grau menor que 3 no grafo restante.</p>",
-          headers: ["opcao", "valida?", "comentario"],
+            "<p>So e valido remover um no de grau <code>&lt; 3</code> no grafo restante. Veja a sequencia de " +
+            "cada opcao e onde as invalidas falham.</p>",
+          headers: ["opcao", "sequencia", "valida?", "comentario"],
           rows: [
-            ["a", { html: "<span class='ok'>sim</span>" }, "d e e tem grau 2; depois c, b, a e f ficam removiveis"],
-            ["b", { html: "<span class='no'>nao</span>" }, { html: "apos remover e, <code>f</code> ainda tem grau 3" }],
-            ["c", { html: "<span class='no'>nao</span>" }, { html: "apos remover d, <code>c</code> ainda tem grau 3" }],
-            ["d", { html: "<span class='no'>nao</span>" }, { html: "apos remover d e e, <code>b</code> ainda tem grau 3" }],
+            ["a", { html: "<code>d, e, c, b, a, f</code>" }, { html: "<span class='ok'>sim</span>" }, "d e e tem grau 2; depois c, b, a e f ficam removiveis"],
+            ["b", { html: "<code>e, f, d, c, b, a</code>" }, { html: "<span class='no'>nao</span>" }, { html: "apos remover e, <code>f</code> ainda tem grau 3" }],
+            ["c", { html: "<code>d, c, e, b, a, f</code>" }, { html: "<span class='no'>nao</span>" }, { html: "apos remover d, <code>c</code> ainda tem grau 3" }],
+            ["d", { html: "<code>d, e, b, c, a, f</code>" }, { html: "<span class='no'>nao</span>" }, { html: "apos remover d e e, <code>b</code> ainda tem grau 3" }],
           ],
         }),
       ];

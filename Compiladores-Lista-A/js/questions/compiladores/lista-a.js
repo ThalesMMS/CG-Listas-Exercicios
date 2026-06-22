@@ -426,9 +426,19 @@
     title: "Diagnostico LL(1) por conflitos",
     tags: ["ll1", "first", "follow"],
     hubDesc: "Verificar quatro gramaticas pequenas procurando intersecoes FIRST/FIRST e FIRST/FOLLOW.",
-    statement: "Para cada gramatica, identifique e demonstre se ela e LL(1).",
+    statement: "Para cada uma das quatro gramaticas, identifique e demonstre se ela e LL(1).",
     build: function () {
       return [
+        C.domStep(
+          "As quatro gramaticas",
+          "<p>O nao terminal inicial e o da primeira producao de cada item.</p>",
+          grammar([
+            "(a)  X -> aY | Z ;  Y -> a | c ;  Z -> bY",
+            "(b)  P -> dR ;  R -> o | S ;  S -> g | og",
+            "(c)  J -> aKL ;  K -> c | lambda ;  L -> c",
+            "(d)  J -> aKL ;  K -> c | lambda ;  L -> b",
+          ])
+        ),
         C.tableStep({
           title: "Resumo dos criterios",
           body:
