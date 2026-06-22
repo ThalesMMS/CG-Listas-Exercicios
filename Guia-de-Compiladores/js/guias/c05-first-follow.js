@@ -127,10 +127,11 @@
         title: "Quando há λ: o caso interessante",
         body: "Em <code>A → x C B y</code>, <code>B → z | λ</code>, <code>C → y | B x</code>: como " +
           "<code>B</code> pode ser λ, FIRST(C) ganha o <code>x</code> de <code>B x</code> (além de y, z). " +
-          "É a λ que faz FIRST/FOLLOW “vazarem”.",
+          "É a λ que faz FIRST/FOLLOW “vazarem”. E, por <code>A</code> ser o símbolo inicial, " +
+          "<code>$ ∈ FOLLOW(A)</code>.",
         headers: ["não-terminal", "FIRST", "FOLLOW"],
         rows: [
-          ["A", "{ x }", "{ }"],
+          ["A", "{ x }", "{ $ }"],
           ["B", "{ z, λ }", "{ x, y }"],
           ["C", "{ x, y, z }", "{ y, z }"],
         ],

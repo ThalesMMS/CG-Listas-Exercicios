@@ -405,10 +405,12 @@
         C.tableStep({
           title: "FOLLOW",
           body:
-            "<p>Em <code>A -> x C B y</code>, depois de <code>B</code> vem <code>y</code>. Depois de <code>C</code> vem <code>B y</code>, entao entram <code>z</code> e <code>y</code>.</p>",
+            "<p><code>A</code> e o simbolo inicial, entao <code>$</code> (fim de entrada) pertence a " +
+            "<code>FOLLOW(A)</code>. Em <code>A -> x C B y</code>, depois de <code>B</code> vem <code>y</code>. " +
+            "Depois de <code>C</code> vem <code>B y</code>, entao entram <code>z</code> e <code>y</code>.</p>",
           headers: ["nao terminal", "FOLLOW"],
           rows: [
-            ["A", "{ }"],
+            ["A", "{ $ }"],
             ["B", "{ x, y }"],
             ["C", "{ y, z }"],
           ],

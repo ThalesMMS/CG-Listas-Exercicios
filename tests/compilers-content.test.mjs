@@ -149,4 +149,71 @@ const norm = (s) =>
   assert.ok(/nao garante/.test(listA) && /FIRST disjuntos nem LL\(1\)/.test(listA), "#4: lista A Q4 states the correct caveat");
 }
 
+/* ───────────────────────── issue #5: Lista A Q6 / Guia c05 ─────────────────────────
+ * FOLLOW of the start symbol must contain $. We recompute FIRST/FOLLOW for the
+ * example grammar by fixpoint and assert the sets, then check both files show $.
+ */
+{
+  const L = "λ"; // λ-sentinel (terminals here are x, y, z)
+  const G = { A: [["x", "C", "B", "y"]], B: [["z"], []], C: [["y"], ["B", "x"]] };
+  const START = "A";
+  const isNT = (s) => Object.prototype.hasOwnProperty.call(G, s);
+
+  const FIRST = {};
+  for (const nt of Object.keys(G)) FIRST[nt] = new Set();
+  const firstSym = (s) => (isNT(s) ? FIRST[s] : new Set([s]));
+  const firstSeq = (seq) => {
+    const out = new Set();
+    let nullable = true;
+    for (const s of seq) {
+      const fs = firstSym(s);
+      for (const t of fs) if (t !== L) out.add(t);
+      if (!fs.has(L)) { nullable = false; break; }
+    }
+    if (nullable) out.add(L);
+    return out;
+  };
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const nt of Object.keys(G)) {
+      for (const rhs of G[nt]) {
+        const fs = firstSeq(rhs);
+        for (const t of fs) if (!FIRST[nt].has(t)) { FIRST[nt].add(t); changed = true; }
+      }
+    }
+  }
+
+  const FOLLOW = {};
+  for (const nt of Object.keys(G)) FOLLOW[nt] = new Set();
+  FOLLOW[START].add("$");
+  for (let changed = true; changed; ) {
+    changed = false;
+    for (const nt of Object.keys(G)) {
+      for (const rhs of G[nt]) {
+        for (let i = 0; i < rhs.length; i++) {
+          const sym = rhs[i];
+          if (!isNT(sym)) continue;
+          const fb = firstSeq(rhs.slice(i + 1));
+          for (const t of fb) if (t !== L && !FOLLOW[sym].has(t)) { FOLLOW[sym].add(t); changed = true; }
+          if (fb.has(L)) for (const t of FOLLOW[nt]) if (!FOLLOW[sym].has(t)) { FOLLOW[sym].add(t); changed = true; }
+        }
+      }
+    }
+  }
+
+  const eq = (set, arr) => set.size === arr.length && arr.every((x) => set.has(x));
+  assert.ok(FOLLOW.A.has("$"), "#5: FOLLOW(start symbol A) must contain $");
+  assert.ok(eq(FOLLOW.A, ["$"]), "#5: FOLLOW(A) = { $ }");
+  assert.ok(eq(FOLLOW.B, ["x", "y"]), "#5: FOLLOW(B) = { x, y }");
+  assert.ok(eq(FOLLOW.C, ["y", "z"]), "#5: FOLLOW(C) = { y, z }");
+  assert.ok(eq(FIRST.C, ["x", "y", "z"]), "#5: FIRST(C) = { x, y, z }");
+
+  const q6 = read("Compiladores-Lista-A/js/questions/compiladores/lista-a.js");
+  const c05 = read("Guia-de-Compiladores/js/guias/c05-first-follow.js");
+  assert.ok(q6.includes('["A", "{ $ }"]'), "#5: lista A Q6 FOLLOW(A) shows { $ }");
+  assert.ok(!q6.includes('["A", "{ }"]'), "#5: lista A Q6 no longer shows empty FOLLOW(A)");
+  assert.ok(c05.includes('["A", "{ x }", "{ $ }"]'), "#5: guia c05 FOLLOW(A) shows { $ }");
+  assert.ok(!c05.includes('["A", "{ x }", "{ }"]'), "#5: guia c05 no longer shows empty FOLLOW(A)");
+}
+
 console.log("Compilers content checks passed.");
