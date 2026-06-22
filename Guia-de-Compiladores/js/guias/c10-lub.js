@@ -20,12 +20,14 @@
       },
       C.domStep(
         "Como achar LUB(A, B)",
-        "É achar o <b>encontro</b> (meet) dos dois caminhos até a raiz.",
+        "É o <b>encontro</b> dos caminhos de ancestrais de A e B — o ancestral comum mais específico. " +
+          "Na teoria de reticulados, esse limite superior mínimo é o <b>join</b> (o <b>meet</b> seria o " +
+          "oposto: o limite <i>inferior</i> máximo).",
         "<div class='ex-callout tip'><div class='ex-callout-title'>Receita</div>" +
           "<ol>" +
           "<li>liste os <b>ancestrais</b> de A (subindo até Object);</li>" +
           "<li>liste os ancestrais de B;</li>" +
-          "<li>o LUB é o ancestral comum <b>mais baixo</b>.</li>" +
+          "<li>o LUB é o ancestral comum <b>mais baixo</b> (mais específico).</li>" +
           "</ol>" +
           "<p>Caso especial: se <code>A ≤ B</code> (A é subtipo de B), então <code>LUB(A,B) = B</code>.</p></div>"
       ),

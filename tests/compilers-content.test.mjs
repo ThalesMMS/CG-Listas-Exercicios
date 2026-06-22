@@ -216,4 +216,44 @@ const norm = (s) =>
   assert.ok(!c05.includes('["A", "{ x }", "{ }"]'), "#5: guia c05 no longer shows empty FOLLOW(A)");
 }
 
+/* ───────────────────────── issue #6: Lista B Q4 / Guia c10 ─────────────────────────
+ * The LUB table must judge a distinct, fully-stated equality per row, with correct
+ * verdicts for the hierarchy; the guide must call LUB the join (not the meet).
+ */
+{
+  const parent = {
+    Object: null, Bool: "Object", Point: "Object", Line: "Object", Shape: "Object",
+    Quad: "Shape", Circle: "Shape", Rect: "Quad", Square: "Rect",
+  };
+  const ancestors = (x) => { const out = []; for (let c = x; c; c = parent[c]) out.push(c); return out; };
+  const lub = (a, b) => { const ab = new Set(ancestors(b)); return ancestors(a).find((c) => ab.has(c)); };
+
+  assert.equal(lub("Point", "Quad"), "Object", "#6: lub(Point, Quad) = Object");
+  assert.equal(lub("Square", "Rect"), "Rect", "#6: lub(Square, Rect) = Rect (Square ≤ Rect), not Quad");
+  assert.equal(lub("Square", "Circle"), "Shape", "#6: lub(Square, Circle) = Shape, not Object");
+
+  // The four judged claims map to these verdicts:
+  const claims = [
+    ["Point", "Quad", "Object", true],
+    ["Square", "Rect", "Quad", false],
+    ["Square", "Rect", "Rect", true],
+    ["Square", "Circle", "Object", false],
+  ];
+  for (const [a, b, claimed, verdict] of claims) {
+    assert.equal(lub(a, b) === claimed, verdict, `#6: verdict of lub(${a}, ${b}) = ${claimed}`);
+  }
+
+  const listB = read("Compiladores-Lista-B/js/questions/compiladores/lista-b.js");
+  for (const [a, b, claimed] of claims) {
+    assert.ok(listB.includes(`lub(${a}, ${b}) = ${claimed}`), `#6: lista B Q4 states the full equality lub(${a}, ${b}) = ${claimed}`);
+  }
+  // Old ambiguous form (bare result, no asserted RHS) is gone.
+  assert.ok(!listB.includes('["lub(Square, Rect)", "Rect"'), "#6: lista B Q4 dropped the ambiguous duplicate row");
+
+  const c10 = read("Guia-de-Compiladores/js/guias/c10-lub.js");
+  assert.ok(/<b>join<\/b>/.test(c10), "#6: guia c10 names LUB the join");
+  assert.ok(!/\(meet\) dos/.test(c10), "#6: guia c10 no longer defines LUB as the meet");
+  assert.ok(/limite superior mínimo/.test(c10), "#6: guia c10 defines LUB as the least upper bound");
+}
+
 console.log("Compilers content checks passed.");

@@ -206,25 +206,27 @@
     tags: ["lub", "heranca"],
     hubDesc: "Encontrar o ancestral comum mais especifico em uma hierarquia de classes.",
     statement:
-      "Na hierarquia dada, marque quais expressoes de <code>lub</code> sao verdadeiras.",
+      "Na hierarquia dada, julgue cada <b>afirmacao</b> de <code>lub</code> como verdadeira ou falsa.",
     build: function () {
       return [
         {
           title: "A hierarquia",
           body:
-            "<p>O <code>lub(A,B)</code> e o ancestral comum mais baixo. Suba as duas cadeias ate elas se encontrarem.</p>",
+            "<p>O <code>lub(A,B)</code> e o ancestral comum mais baixo (mais especifico) &mdash; o limite " +
+            "superior minimo. Suba as duas cadeias ate elas se encontrarem.</p>",
           visual: hierarchyVisual([]),
         },
         C.tableStep({
-          title: "Calculando cada LUB",
+          title: "Julgando cada afirmacao",
           body:
-            "<p>Quando um tipo e subtipo do outro, o LUB e o mais geral entre eles.</p>",
-          headers: ["expressao", "resultado", "veredito"],
+            "<p>Cada linha traz a <b>igualdade afirmada</b> por completo e seu veredito. Quando falsa, " +
+            "indicamos o LUB correto. Lembre: se um tipo e subtipo do outro, o LUB e o mais geral entre eles.</p>",
+          headers: ["afirmacao", "veredito"],
           rows: [
-            ["lub(Point, Quad)", "Object", { html: "<span class='ok'>verdadeiro</span>" }],
-            ["lub(Square, Rect)", "Rect", { html: "<span class='no'>nao e Quad</span>" }],
-            ["lub(Square, Rect)", "Rect", { html: "<span class='ok'>verdadeiro</span>" }],
-            ["lub(Square, Circle)", "Shape", { html: "<span class='no'>nao e Object</span>" }],
+            ["lub(Point, Quad) = Object", { html: "<span class='ok'>verdadeira</span>" }],
+            ["lub(Square, Rect) = Quad", { html: "<span class='no'>falsa</span> &mdash; o resultado e Rect (Square &le; Rect)" }],
+            ["lub(Square, Rect) = Rect", { html: "<span class='ok'>verdadeira</span>" }],
+            ["lub(Square, Circle) = Object", { html: "<span class='no'>falsa</span> &mdash; o resultado e Shape" }],
           ],
         }),
       ];
