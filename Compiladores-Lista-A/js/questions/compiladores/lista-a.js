@@ -218,23 +218,41 @@
       "Faca a fatoracao a esquerda da primeira gramatica e elimine a recursao a esquerda da segunda.",
     build: function () {
       return [
+        C.domStep(
+          "Primeira gramatica (a fatorar)",
+          "<p>Ha prefixos comuns em <code>S</code> (<code>S +</code>) e <code>P</code> (<code>P *</code>), " +
+            "mas a gramatica ja tem casos-base (<code>S -> P</code> e <code>P -> I</code>), entao gera cadeias " +
+            "terminais como <code>1 + 1 * 0</code>. Fatorar nao pode perder esses casos-base.</p>",
+          grammar([
+            "S -> S + S | S + P | P",
+            "P -> P * P | P * I | I",
+            "I -> -I | (S) | D",
+            "D -> 0 | 1N",
+            "N -> 0 | 1 | N N | lambda",
+          ])
+        ),
         C.tableStep({
           title: "Fator comum a esquerda",
           body:
-            "<p>Quando duas alternativas comecam igual, isolamos o prefixo comum e empurramos a escolha para um novo nao terminal.</p>",
+            "<p>Quando duas alternativas comecam igual, isolamos o prefixo comum e empurramos a escolha para " +
+            "um novo nao terminal. O caso-base (<code>| P</code>, <code>| I</code>) nao tem prefixo comum, " +
+            "entao permanece intacto.</p>",
           headers: ["nao terminal", "antes", "depois"],
           rows: [
-            ["S", "S -> S + S | S + P", { html: "S -> S + S'<br>S' -> S | P" }],
-            ["P", "P -> P * P | P * I", { html: "P -> P * P'<br>P' -> P | I" }],
+            ["S", "S -> S + S | S + P | P", { html: "S -> S + S' | P<br>S' -> S | P" }],
+            ["P", "P -> P * P | P * I | I", { html: "P -> P * P' | I<br>P' -> P | I" }],
             ["I, D, N", "sem prefixo comum util", "permanecem iguais"],
           ],
         }),
         C.domStep(
           "Gramatica fatorada",
-          "<p>A fatoracao nao remove a recursao a esquerda; ela so tira a decisao tardia depois do prefixo comum.</p>",
+          "<p>A fatoracao adia a decisao para depois do prefixo comum, mas <b>nao</b> remove a recursao a " +
+            "esquerda (<code>S -> S + S'</code> ainda e recursiva a esquerda) e, <b>por si so, nao garante " +
+            "FIRST disjuntos nem LL(1)</b> &mdash; sao transformacoes distintas. Note que os casos-base " +
+            "<code>| P</code> e <code>| I</code> foram preservados.</p>",
           grammar([
-            "S  -> S + S'",
-            "P  -> P * P'",
+            "S  -> S + S' | P",
+            "P  -> P * P' | I",
             "I  -> -I | (S) | D",
             "D  -> 0 | 1N",
             "N  -> 0 | 1 | N N | lambda",

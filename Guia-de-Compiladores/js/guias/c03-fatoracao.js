@@ -14,7 +14,7 @@
         "O problema do prefixo comum",
         "Um parser preditivo (LL) escolhe a produção olhando <b>um símbolo à frente</b>. Se duas " +
           "alternativas começam igual, ele não consegue decidir só pelo início:",
-        C.codeHtml("S → S + S | S + P\n         ^^^^ ^^^^\n      mesmo prefixo \"S +\" → o parser não sabe qual escolher")
+        C.codeHtml("S → S + S | S + P | P\n         ^^^^ ^^^^\n      mesmo prefixo \"S +\" → o parser não sabe qual escolher")
       ),
       {
         title: "O ponto de indecisão",
@@ -58,10 +58,11 @@
       },
       G.gstep(
         "Exemplo — antes",
-        "Gramática da Lista A. Note os prefixos comuns <code>S +</code> e <code>P ∗</code>:",
+        "Gramática da Lista A. Note os prefixos comuns <code>S +</code> e <code>P ∗</code> — e os " +
+          "casos-base <code>S → P</code> e <code>P → I</code>, que fazem a gramática gerar cadeias terminais:",
         [
-          "S → S + S | S + P",
-          "P → P ∗ P | P ∗ I",
+          "S → S + S | S + P | P",
+          "P → P ∗ P | P ∗ I | I",
           "I → − I | ( S ) | D",
           "D → 0 | 1 N",
           "N → 0 | 1 | N N | λ",
@@ -69,12 +70,12 @@
       ),
       G.gstep(
         "Exemplo — depois (fatorada)",
-        "Extraímos <code>S +</code> e <code>P ∗</code>, criando <code>S′</code> e <code>P′</code>. As " +
-          "demais regras já não tinham prefixo comum:",
+        "Extraímos <code>S +</code> e <code>P ∗</code>, criando <code>S′</code> e <code>P′</code>. Os " +
+          "casos-base <code>| P</code> e <code>| I</code> não têm prefixo comum, então ficam intactos:",
         [
-          "S  → S + S′",
+          "S  → S + S′ | P",
           "S′ → S | P",
-          "P  → P ∗ P′",
+          "P  → P ∗ P′ | I",
           "P′ → P | I",
           "I  → − I | ( S ) | D",
           "D  → 0 | 1 N",
@@ -83,12 +84,12 @@
       ),
       C.domStep(
         "Armadilhas e resumo",
-        "Fatorar deixa cada não-terminal com alternativas de <b>primeiros símbolos distintos</b> — " +
-          "condição necessária para LL(1).",
+        "Fatorar remove <b>um</b> prefixo comum explícito — mas, sozinho, <b>não garante</b> FIRST " +
+          "disjuntos nem LL(1): pode restar (ou surgir) outro prefixo comum, e a recursão à esquerda continua.",
         "<div class='ex-callout tip'><div class='ex-callout-title'>Cuidado</div>" +
           "<ul><li>Pode ser preciso <b>fatorar de novo</b> se um novo prefixo comum surgir;</li>" +
-          "<li>fatoração <b>não remove recursão à esquerda</b> (veja o próximo guia) — note que " +
-          "<code>S → S + S′</code> ainda é recursiva à esquerda.</li></ul></div>"
+          "<li>fatoração e <b>remoção de recursão à esquerda</b> são transformações <b>distintas</b> — " +
+          "<code>S → S + S′</code> continua recursiva à esquerda (veja o próximo guia).</li></ul></div>"
       ),
     ];
   }
