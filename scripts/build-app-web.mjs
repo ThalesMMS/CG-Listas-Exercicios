@@ -30,4 +30,4 @@ for (const entry of entries) {
   });
 }
 
-console.log(`iOS web bundle written to ${path.relative(root, outDir)}`);
+console.log(`Capacitor web bundle written to ${path.relative(root, outDir)}`);

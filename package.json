@@ -2,13 +2,18 @@
   "name": "cg-listas-exercicios",
   "version": "1.0.0",
   "private": true,
-  "description": "Portal de listas de exercícios empacotado como app iOS via Capacitor.",
+  "description": "Portal de listas de exercícios empacotado como app móvel via Capacitor.",
   "scripts": {
-    "build:ios-web": "node scripts/build-ios-web.mjs",
-    "ios:sync": "npm run build:ios-web && npx cap sync ios",
-    "ios:open": "npx cap open ios"
+    "build:app-web": "node scripts/build-app-web.mjs",
+    "build:ios-web": "npm run build:app-web",
+    "ios:sync": "npm run build:app-web && npx cap sync ios",
+    "ios:open": "npx cap open ios",
+    "android:sync": "npm run build:app-web && npx cap sync android",
+    "android:open": "npx cap open android",
+    "android:build": "npm run android:sync && cd android && ./gradlew assembleDebug"
   },
   "dependencies": {
+    "@capacitor/android": "^7.6.7",
     "@capacitor/core": "^7.4.4",
     "@capacitor/ios": "^7.4.4"
   },

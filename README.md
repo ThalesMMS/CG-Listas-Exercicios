@@ -6,15 +6,16 @@ Portal estático com listas e guias de Computação Gráfica e Compiladores.
 
 Abra `index.html` diretamente no navegador ou sirva a pasta com um servidor local estático.
 
-## Build para iOS
+## Build para apps móveis
 
-O app iOS é gerado com Capacitor a partir do portal estático existente.
+Os apps iOS e Android são gerados com Capacitor a partir do portal estático existente.
 
 ### Pré-requisitos
 
 - Node.js e npm
-- Xcode
-- CocoaPods disponível no ambiente do Xcode
+- Xcode e CocoaPods para iOS
+- Android Studio com Android SDK para Android
+- JDK 17 ou 21 para Android
 
 ### Instalar dependências
 
@@ -28,13 +29,21 @@ Se o cache global do npm apresentar erro de permissão, use um cache local do pr
 npm install --cache .npm-cache
 ```
 
-### Gerar e sincronizar os arquivos do app iOS
+### Gerar o bundle web dos apps
+
+```bash
+npm run build:app-web
+```
+
+Esse comando cria o bundle web em `dist-ios-web/`, que é usado pelos projetos nativos do Capacitor.
+
+### Gerar e sincronizar o app iOS
 
 ```bash
 npm run ios:sync
 ```
 
-Esse comando cria o bundle web em `dist-ios-web/`, copia os arquivos para `ios/App/App/public/` e sincroniza o projeto nativo com o Capacitor.
+Esse comando copia o bundle web para `ios/App/App/public/` e sincroniza o projeto nativo com o Capacitor.
 
 ### Abrir no Xcode
 
@@ -53,3 +62,61 @@ xcodebuild -workspace ios/App/App.xcworkspace -scheme App -destination 'generic/
 ```
 
 Para build em dispositivo real ou distribuição, configure o time de assinatura no Xcode.
+
+## Build para Android
+
+Antes de rodar o build Android pela linha de comando, confirme que o SDK está configurado:
+
+```bash
+export ANDROID_HOME="$HOME/Library/Android/sdk"
+export PATH="$ANDROID_HOME/platform-tools:$PATH"
+```
+
+Se o Java ativo for novo demais para o Gradle, use um JDK LTS:
+
+```bash
+export JAVA_HOME="$(/usr/libexec/java_home -v 21)"
+```
+
+Em instalações Homebrew sem registro no `java_home`, o caminho costuma ser:
+
+```bash
+export JAVA_HOME="/opt/homebrew/opt/openjdk@21/libexec/openjdk.jdk/Contents/Home"
+```
+
+### Gerar e sincronizar o app Android
+
+```bash
+npm run android:sync
+```
+
+Esse comando copia o bundle web para `android/app/src/main/assets/public/` e sincroniza o projeto nativo com o Capacitor.
+
+### Abrir no Android Studio
+
+```bash
+npm run android:open
+```
+
+No Android Studio, selecione um emulador ou dispositivo e rode o módulo `app`.
+
+### Build via linha de comando
+
+Para sincronizar e gerar o APK debug:
+
+```bash
+npm run android:build
+```
+
+O APK debug fica em:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+Também é possível rodar o Gradle diretamente:
+
+```bash
+cd android
+./gradlew assembleDebug
+```
