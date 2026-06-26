@@ -52,4 +52,4 @@ js/
 
 ## Observação
 
-A pasta não altera o `index.html` principal do projeto. Para integrar ao portal depois, basta adicionar um card/link apontando para `tp5-compiladores/index.html`.
+A pasta está integrada ao portal principal: o `index.html` da raiz tem um card apontando para `TP5-Compiladores/index.html`, e a pasta é incluída no bundle dos apps móveis por `scripts/build-app-web.mjs`.

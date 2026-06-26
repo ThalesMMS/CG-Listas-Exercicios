@@ -16,6 +16,8 @@ const entries = [
   "Compiladores-Lista-A",
   "Compiladores-Lista-B",
   "Compiladores-Lista-C",
+  "TP4-Compiladores",
+  "TP5-Compiladores",
   "Guia-de-Compiladores",
   "Guia-de-Computacao-Grafica"
 ];
